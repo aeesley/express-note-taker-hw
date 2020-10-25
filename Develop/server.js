@@ -21,7 +21,7 @@ app.get("/notes", function(req, res) {
     res.sendFile(path.join(__dirname, "./public/notes.html"));
 });
 
-// getting the data from the note inputs
+// getting the data from the note inputs and turning it into workable data
 app.get("/api/notes", function(req, res) {
     
     fs.readFile('db/db.json', 'utf8', function (err, data) {
@@ -46,10 +46,8 @@ app.post("/api/notes", function(req, res) {
         var parsedOldDbData = JSON.parse(regularArray)
 
         // adding id to each note that is created
-        console.log('Add new note to this array!!', parsedOldDbData)
         req.body.id = parsedOldDbData.length + 1
         var newDb = parsedOldDbData.concat(req.body)
-        console.log('new DB!!! time to update db.json file wiht this array!!!', newDb)
 
         // replacing the db.json file with our new array updated from inputs
         fs.writeFile('db/db.json', JSON.stringify(newDb), function (err) {
@@ -59,6 +57,55 @@ app.post("/api/notes", function(req, res) {
     });
 });
 
+//DELETING CAPABILITY
+app.delete('/api/notes/:id', (req, res) => {
+
+    updatedArray = [];
+
+    fs.readFile('db/db.json', (err, data) => {
+        if (err) throw err;
+        let deleteNoteId = req.params.id;
+        let json = JSON.parse(data);
+
+        json.forEach((item, i) => {
+            if (item.id === deleteNoteId) {
+                json.splice(i, 1);
+            } else if (item.id != deleteNoteId) {
+                updatedArray.push("");
+
+            }
+        });
+
+        fs.writeFile('db/db.son', JSON.stringify(json, null, 2), (err) => {
+            if (err) throw err;
+            res.json(updatedArray);
+        });
+    });
+})
+
+// // ADDING THE DELETING FUNCTIONALITY ATTEMPT 2
+
+// app.delete('/api/notes/:id', function(req, res) {
+//     console.log('this is our id@@@', req.params)
+
+//     // creating empty array to save the notes we do NOT want to delete back to
+//     saveNotesArray = [];
+
+//     // looping through existing array to find the id match for the note we want to delete so we can delete it. For any notes not selected to delete, they will save back to the empty array
+//     for (let index = 0; index < parsedOldDbData.length; index++) {
+//         if(id === req.params.id){
+//             //then delete
+//         } else if (id != req.params.id) {
+//             //push all other notes to new array
+//         }
+
+        
+//     };
+
+
+//     // The will need to replace that new updated array with deleted items to the db.json file again like we did above
+
+// });
 
 // Getting local host port to work
 app.listen(PORT, function() {
