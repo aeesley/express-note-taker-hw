@@ -21,7 +21,7 @@ app.get("/notes", function(req, res) {
     res.sendFile(path.join(__dirname, "./public/notes.html"));
 });
 
-// 
+// getting the data from the note inputs
 app.get("/api/notes", function(req, res) {
     
     fs.readFile('db/db.json', 'utf8', function (err, data) {
@@ -31,13 +31,36 @@ app.get("/api/notes", function(req, res) {
         var regularArray = JSON.parse(strData)
         var parsedOldDbData = JSON.parse(regularArray)
         res.json(parsedOldDbData)
-        console.log(data);
     })    
 });
 
+// posting data saved from the note input and assigning it an id that we can use to call the specific note so that we can add deleting functionality later
+app.post("/api/notes", function(req, res) {
+    console.log("hit the post route input from form!!!", req.body);
+
+    fs.readFile('db/db.json', 'utf8', function (err, data) {
+        
+        // adding new note to our array
+        var strData = JSON.stringify(data)
+        var regularArray = JSON.parse(strData)
+        var parsedOldDbData = JSON.parse(regularArray)
+
+        // adding id to each note that is created
+        console.log('Add new note to this array!!', parsedOldDbData)
+        req.body.id = parsedOldDbData.length + 1
+        var newDb = parsedOldDbData.concat(req.body)
+        console.log('new DB!!! time to update db.json file wiht this array!!!', newDb)
+
+        // replacing the db.json file with our new array updated from inputs
+        fs.writeFile('db/db.json', JSON.stringify(newDb), function (err) {
+            console.log(err);
+            res.json(newDb)
+        });
+    });
+});
 
 
-
+// Getting local host port to work
 app.listen(PORT, function() {
     console.log("App listening on PORT " + PORT);
     });
